@@ -1,0 +1,16 @@
+{
+  "groups": {
+    "common": [
+      {
+        "name": "Unity Hub.exe",
+        "path": "E:/Program Files/Unity Hub/Unity Hub.exe"
+      }
+    ],
+    "doctor": [
+      {
+        "name": "update.bat",
+        "path": "H:/work/doctorvrclient/update.bat"
+      }
+    ]
+  }
+}
