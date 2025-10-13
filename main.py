@@ -1,355 +1,56 @@
 import tkinter as tk
-from tkinter import ttk, filedialog, messagebox
 import os
-import keyboard
-import json
-from tkinter import simpledialog
-from PIL import Image, ImageTk
-import pystray
-import threading
+import sys
+import traceback
+import MiniQDesktop
+import os
+import psutil  # 需要安装 psutil 库：pip install psutil
 
-class MiniQDesktop:
-    def __init__(self):
-        # 主窗口设置
-        self.root = tk.Tk()
-        self.root.title("MiniQ书桌")
-        self.root.attributes('-alpha', 0.95)  # 半透明效果
-        self.root.attributes('-topmost', True)  # 置顶
+def check_single_instance():
+    lock_file = "app.lock"
+    if os.path.exists(lock_file):
+        # 读取锁文件中的 PID
+        with open(lock_file, "r") as f:
+            pid = int(f.read().strip())
         
-        # 存储快捷方式数据
-        self.shortcuts_file = "shortcuts.json"
-        self.shortcuts_data = self.load_shortcuts()
-        
-        # 初始化UI
-        self.setup_ui()
-        
-        # 系统托盘图标
-        self.setup_tray_icon()
-        
-        # 初始位置(屏幕右下角)
-        self.position_window()
-        
-        # 窗口拖动相关变量
-        self._drag_data = {"x": 0, "y": 0}
-        self.setup_global_hotkey()
-        
-    def position_window(self):
-        """将窗口定位在屏幕右下角"""
-        screen_width = self.root.winfo_screenwidth()
-        screen_height = self.root.winfo_screenheight()
-        window_width = 1000
-        window_height = 400
-        #x = screen_width - window_width - 50  # 距离右边50像素
-        x = 0
-        y = screen_height - window_height - 60  # 距离底部50像素
-        self.root.geometry(f"{window_width}x{window_height}+{x}+{y}")
-    
-    def setup_ui(self):
-        """设置用户界面"""
-        # 主容器
-        main_frame = ttk.Frame(self.root)
-        main_frame.pack(expand=True, fill="both", padx=5, pady=5)
-        
-        # 标题栏
-        title_frame = ttk.Frame(main_frame)
-        title_frame.pack(fill="x")
-        
-        # 拖动区域
-        self.drag_label = ttk.Label(title_frame, text="MiniQ书桌", font=('Arial', 10))
-        self.drag_label.pack(side="left", fill="x", expand=True)
-        
-        # 绑定拖动事件
-        self.drag_label.bind("<ButtonPress-1>", self.start_drag)
-        self.drag_label.bind("<B1-Motion>", self.on_drag)
-        
-        # 关闭按钮
-        # close_btn = ttk.Button(title_frame, text="×", width=2, command=self.hide_window)
-        # close_btn.pack(side="right")
-        
-        # 分组容器
-        self.group_container = ttk.Frame(main_frame)
-        self.group_container.pack(expand=True, fill="both")
-        
-        # 控制按钮
-        control_frame = ttk.Frame(main_frame)
-        control_frame.pack(fill="x", pady=(5, 0))
-        
-        add_btn = ttk.Button(control_frame, text="+", command=self.add_shortcut)
-        add_btn.pack(side="left", padx=2)
-
-        add_btn = ttk.Button(control_frame, text="++", command=self.add_shortcut2)
-        add_btn.pack(side="left", padx=2)
-        
-        add_group_btn = ttk.Button(control_frame, text="new group", command=self.add_group)
-        add_group_btn.pack(side="left", padx=2)
-        
-        # 加载已有分组
-        self.load_groups()
-        
-        # 隐藏窗口按钮(模拟开始菜单旁边的唤出按钮)
-        self.hidden_btn = tk.Button(self.root, text="MQ", bg="lightblue", 
-                                   command=self.toggle_window, bd=0)
-        self.hidden_btn.place(x=-30, y=0, width=30, height=30)
-        
-        # 绑定窗口事件
-        self.root.bind("<Unmap>", lambda e: self.hidden_btn.place(x=-30, y=0))
-        self.root.bind("<Map>", lambda e: self.hidden_btn.place_forget())
-        
-    def setup_tray_icon(self):
-        """设置系统托盘图标"""
-        image = Image.new('RGB', (64, 64), "white")
-        self.tray_icon = pystray.Icon("mini_q", image, "MiniQ书桌", 
-                                     menu=pystray.Menu(
-                                         pystray.MenuItem("Show", self.show_window),
-                                         pystray.MenuItem("Quit", self.quit_app)
-                                     ))
-        
-        # 在单独线程中运行系统托盘
-        threading.Thread(target=self.tray_icon.run, daemon=True).start()
-    
-    def start_drag(self, event):
-        """开始拖动窗口"""
-        self._drag_data["x"] = event.x
-        self._drag_data["y"] = event.y
-    
-    def on_drag(self, event):
-        """拖动窗口"""
-        x = self.root.winfo_x() + (event.x - self._drag_data["x"])
-        y = self.root.winfo_y() + (event.y - self._drag_data["y"])
-        self.root.geometry(f"+{x}+{y}")
-    
-    def toggle_window(self):
-        """切换窗口显示状态"""
-        if self.root.state() == "withdrawn":
-            self.show_window()
+        # 检查 PID 是否有效
+        if psutil.pid_exists(pid):
+            print("程序已经在运行中，不能重复启动。")
+            sys.exit(0)  # 退出程序
         else:
-            self.hide_window()
-    
-    def show_window(self, *args):
-        """显示窗口"""
-        self.root.deiconify()
-        self.hidden_btn.place_forget()
-    
-    def hide_window(self, *args):
-        """隐藏窗口"""
-        self.root.withdraw()
-        # 将唤出按钮移动到屏幕左侧
-        screen_width = self.root.winfo_screenwidth()
-        self.hidden_btn.place(x=0, y=screen_height//2, width=30, height=60)
-    
-    def load_shortcuts(self):
-        """加载快捷方式数据"""
-        if os.path.exists(self.shortcuts_file):
-            with open(self.shortcuts_file, "r", encoding="utf-8") as f:
-                return json.load(f)
-        return {"groups": {}}
-    
-    def save_shortcuts(self):
-        """保存快捷方式数据"""
-        with open(self.shortcuts_file, "w", encoding="utf-8") as f:
-            json.dump(self.shortcuts_data, f, ensure_ascii=False, indent=2)
-    
-    def load_groups(self):
-        """加载所有分组"""
-        # 清空现有分组
-        for widget in self.group_container.winfo_children():
-            widget.destroy()
-        
-        # 加载保存的分组
-        for group_name, shortcuts in self.shortcuts_data["groups"].items():
-            self.create_group_frame(group_name, shortcuts)
-    
-    def create_group_frame(self, group_name, shortcuts=None):
-        """创建一个新的分组框架"""
-        if shortcuts is None:
-            shortcuts = []
-        
-        # 分组框架
-        group_frame = ttk.LabelFrame(self.group_container, text=group_name)
-        group_frame.pack(fill="x", pady=5, padx=5)
-        
-        # 快捷方式容器
-        shortcuts_frame = ttk.Frame(group_frame)
-        shortcuts_frame.pack(fill="x", padx=5, pady=5)
-        
-        # 添加已有快捷方式
-        for shortcut in shortcuts:
-            self.create_shortcut_button(shortcuts_frame, shortcut["name"], shortcut["path"])
-        
-        # 添加"+"按钮
-        add_btn = ttk.Button(shortcuts_frame, text="+", width=3,command=lambda: self.add_shortcut_to_group(group_name))
-        add_btn.pack(side="left", padx=2)
-        add_btn2 = ttk.Button(shortcuts_frame, text="++", width=3,command=lambda: self.add_shortcut_to_group2(group_name))
-        add_btn2.pack(side="left", padx=2)
-        
-        # 删除分组按钮
-        del_btn = ttk.Button(group_frame, text="X", command=lambda: self.delete_group(group_name))
-        del_btn.pack(side="right", pady=(0, 5))
-        
-        # 保存分组到数据
-        if group_name not in self.shortcuts_data["groups"]:
-            self.shortcuts_data["groups"][group_name] = []
-            self.save_shortcuts()
-    
-    def create_shortcut_button(self, parent, name, path):
-        """创建一个快捷方式按钮"""
-        btn = ttk.Button(parent, text=name, command=lambda: self.open_shortcut(path), width=10)
-        btn.pack(side="left", padx=2)
-        
-        # 右键菜单
-        menu = tk.Menu(self.root, tearoff=0)
-        menu.add_command(label="打开", command=lambda: self.open_shortcut(path))
-        menu.add_command(label="删除", command=lambda: self.delete_shortcut(parent, btn, path))
-        
-        btn.bind("<Button-3>", lambda e: menu.post(e.x_root, e.y_root))
-    
-    def open_shortcut(self, path):
-        """打开快捷方式"""
-        #关闭
-        try:
-            if os.path.isdir(path):
-                os.startfile(path)
-            else:
-                os.startfile(path)
-        except Exception as e:
-            messagebox.showerror("错误", f"无法打开: {e}")
+            # 如果 PID 无效，删除锁文件
+            os.remove(lock_file)
 
-        self.hide_window()
-    
-    def delete_shortcut(self, parent, button, path):
-        """删除快捷方式"""
-        button.destroy()
-        # 从所有分组中删除该快捷方式
-        for group in self.shortcuts_data["groups"].values():
-            group[:] = [s for s in group if s["path"] != path]
-        self.save_shortcuts()
-    
-    def delete_group(self, group_name):
-        """删除整个分组"""
-        if messagebox.askyesno("确认", f"确定要删除分组 '{group_name}' 吗?"):
-            del self.shortcuts_data["groups"][group_name]
-            self.save_shortcuts()
-            self.load_groups()
+    # 创建新的锁文件，写入当前进程的 PID
+    with open(lock_file, "w") as f:
+        f.write(str(os.getpid()))
 
-    def add_shortcut2(self):
-        """添加新的快捷方式"""
-        path = filedialog.askdirectory(title="选择文件夹")
-        if not path:
-            return
-        
-        name = os.path.basename(path)
-        # 让用户选择分组
-        self.ask_for_group(name, path)
-    
-    def add_shortcut(self):
-        """添加新的快捷方式"""
-        path = filedialog.askopenfilename(title="选择文件")
-        if not path:
-            return
-        
-        name = os.path.basename(path)
-        # 让用户选择分组
-        self.ask_for_group(name, path)
+def remove_lock_file():
+    lock_file = "app.lock"
+    if os.path.exists(lock_file):
+        os.remove(lock_file)
 
-    def add_shortcut_to_group2(self, group_name):
-        """向指定分组添加快捷方式"""
-        path = filedialog.askdirectory(title="选择文件夹")
-        if not path:
-            return
-        
-        name = os.path.basename(path)
-        self.add_shortcut_to_group_with_name(group_name, name, path)
-    
-    def add_shortcut_to_group(self, group_name):
-        """向指定分组添加快捷方式"""
-        path = filedialog.askopenfilename(title="选择文件")
-        if not path:
-            return
-        
-        name = os.path.basename(path)
-        self.add_shortcut_to_group_with_name(group_name, name, path)
-    
-    def add_shortcut_to_group_with_name(self, group_name, name, path):
-        """向指定分组添加快捷方式(指定名称)"""
-        # 检查是否已存在
-        for group in self.shortcuts_data["groups"].values():
-            if any(s["path"] == path for s in group):
-                messagebox.showwarning("警告", "该快捷方式已存在!")
-                return
-        
-        if group_name not in self.shortcuts_data["groups"]:
-            self.shortcuts_data["groups"][group_name] = []
-        # 添加到分组
-        self.shortcuts_data["groups"][group_name].append({"name": name, "path": path})
-        self.save_shortcuts()
-        self.load_groups()
-    
-    def ask_for_group(self, name, path):
-        """询问将快捷方式添加到哪个分组"""
-        top = tk.Toplevel(self.root)
-        top.title("选择分组")
-        top.transient(self.root)
-        top.grab_set()
-        
-        ttk.Label(top, text=f"将 '{name}' 添加到:").pack(pady=5)
-        
-        # 现有分组选项
-        group_var = tk.StringVar()
-        for group in self.shortcuts_data["groups"]:
-            ttk.Radiobutton(top, text=group, value=group, variable=group_var).pack(anchor="w")
-        
-        # 新建分组选项
-        ttk.Radiobutton(top, text="新建分组:", value="new", variable=group_var).pack(anchor="w")
-        new_group_entry = ttk.Entry(top)
-        new_group_entry.pack(fill="x", padx=20, pady=(0, 10))
-        
-        def on_confirm():
-            selected_group = group_var.get()
-            if selected_group == "new":
-                new_group_name = new_group_entry.get().strip()
-                if not new_group_name:
-                    messagebox.showerror("错误", "请输入新分组名称!")
-                    return
-                if new_group_name in self.shortcuts_data["groups"]:
-                    messagebox.showerror("错误", "分组已存在!")
-                    return
-                self.shortcuts_data["groups"][new_group_name] = []
-                self.add_shortcut_to_group_with_name(new_group_name, name, path)
-            else:
-                self.add_shortcut_to_group_with_name(selected_group, name, path)
-            top.destroy()
-        
-        ttk.Button(top, text="确定", command=on_confirm).pack(pady=5)
-    
-    def add_group(self):
-        """添加新的分组"""
-        name = simpledialog.askstring("新建分组", "输入分组名称:")
-        if name and name.strip():
-            if name in self.shortcuts_data["groups"]:
-                messagebox.showerror("错误", "分组已存在!")
-                return
-            self.shortcuts_data["groups"][name] = []
-            self.save_shortcuts()
-            self.load_groups()
-    
-    def quit_app(self):
-        """退出应用程序"""
-        self.tray_icon.stop()
-        self.root.quit()
-        self.root.destroy()
-
-    def setup_global_hotkey(self):
-        """设置全局快捷键"""
-        keyboard.add_hotkey('alt+z', self.show_window)
 
 if __name__ == "__main__":
-    # 获取屏幕高度(用于隐藏按钮定位)
-    root = tk.Tk()
-    root.withdraw()  # 隐藏临时窗口
-    screen_height = root.winfo_screenheight()
-    root.update_idletasks()
-    root.destroy()  # 销毁临时窗口
-    
-    app = MiniQDesktop()
-    app.root.protocol("WM_DELETE_WINDOW", app.hide_window)
-    app.root.mainloop()
+    # 检查是否已有实例运行
+    check_single_instance()
+
+    try:
+        # 获取屏幕高度(用于隐藏按钮定位)
+        root = tk.Tk()
+        root.withdraw()  # 隐藏临时窗口
+        screen_height = root.winfo_screenheight()
+        root.update_idletasks()
+        root.destroy()  # 销毁临时窗口
+
+        app = MiniQDesktop.MiniQDesktop()
+        app.setup_global_hotkey()
+        app.root.protocol("WM_DELETE_WINDOW", app.hide_window)
+        app.root.mainloop()
+
+    except Exception as e:
+        with open("error.log", "a", encoding="utf-8") as f:
+            f.write(traceback.format_exc())
+    finally:
+        # 程序退出时删除锁文件
+        remove_lock_file()

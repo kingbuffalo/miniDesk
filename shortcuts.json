@@ -4,12 +4,44 @@
       {
         "name": "Unity Hub.exe",
         "path": "E:/Program Files/Unity Hub/Unity Hub.exe"
+      },
+      {
+        "name": "gitcommit.bat",
+        "path": "H:/UnityForTest/gitcommit.bat"
+      },
+      {
+        "name": "gitupdate.bat",
+        "path": "H:/UnityForTest/gitupdate.bat"
+      },
+      {
+        "name": "ModiacFactory.exe",
+        "path": "G:/Program Files/WinAVI/Modiac Factory/ModiacFactory.exe"
+      },
+      {
+        "name": "EA",
+        "path": "Z:/客户端打包/Crazy Doctor Client/Android/EA"
+      },
+      {
+        "name": "ksolaunch.exe",
+        "path": "E:/Program Files/WPS Office/ksolaunch.exe"
+      },
+      {
+        "name": "XMind.exe",
+        "path": "E:/Program Files (x86)/XMind/XMind.exe"
       }
     ],
     "doctor": [
       {
         "name": "update.bat",
-        "path": "H:/work/doctorvrclient/update.bat"
+        "path": "H:/work/doctorvrclient2/update.bat"
+      },
+      {
+        "name": "update.bat",
+        "path": "H:/work/doctor_ea/update.bat"
+      },
+      {
+        "name": "doctor_ea",
+        "path": "H:/work/doctor_ea"
       }
     ]
   }
