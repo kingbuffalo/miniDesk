@@ -14,7 +14,7 @@ def get_icon_image(path, size=(32, 32)):
     """提取快捷方式或可执行文件的图标，或为文件夹使用默认图标"""
     if os.path.isdir(path):
         # 使用默认文件夹图标
-        icon_path = os.path.join(os.getcwd(), "default_folder_icon.png")
+        icon_path = os.path.join(os.getcwd(), "icons/default_folder_icon.png")
         if not os.path.exists(icon_path):
             # 如果默认图标文件不存在，创建一个简单的占位图标
             icon = Image.new("RGB", size, "gray")
@@ -26,6 +26,13 @@ def get_icon_image(path, size=(32, 32)):
             return ImageTk.PhotoImage(icon)
     else:
         # 提取文件的图标
+        # 如果是exe 使用exe.png
+        if path.lower().endswith('.exe'):
+            icon_path = os.path.join(os.getcwd(), "icons/exe_icon.png")
+            if os.path.exists(icon_path):
+                icon = Image.open(icon_path)
+                icon = icon.resize(size, Image.Resampling.LANCZOS)
+                return ImageTk.PhotoImage(icon)
         temp_icon_path = os.path.join(os.getcwd(), "temp_file.png")
         try:
             ctypes.windll.shell32.ExtractIconExW(path, 0, None, ctypes.pointer(ctypes.c_wchar_p(temp_icon_path)), 1)
@@ -232,9 +239,23 @@ class MiniQDesktop:
         # 右键菜单
         menu = tk.Menu(self.root, tearoff=0)
         menu.add_command(label="打开", command=lambda: self.open_shortcut(path))
+        menu.add_command(label="goto", command=lambda: self.goto_shortcut(path))
+        menu.add_separator()
         menu.add_command(label="删除", command=lambda: self.delete_shortcut(parent, btn, path))
         
         btn.bind("<Button-3>", lambda e: menu.post(e.x_root, e.y_root))
+
+    def goto_shortcut(self, path):
+        """打开快捷方式所在位置"""
+        try:
+            if os.path.isdir(path):
+                os.startfile(path)
+            else:
+                folder = os.path.dirname(path)
+                os.startfile(folder)
+        except Exception as e:
+            messagebox.showerror("错误", f"无法打开所在位置: {e}")
+        self.hide_window()
     
     def open_shortcut(self, path):
         """打开快捷方式"""
