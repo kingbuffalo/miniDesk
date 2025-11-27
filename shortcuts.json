@@ -24,13 +24,13 @@
       {
         "name": "XMind.exe",
         "path": "E:/Program Files (x86)/XMind/XMind.exe"
+      },
+      {
+        "name": "PICO Connect.exe",
+        "path": "F:/Program Files/PICO Connect/PICO Connect.exe"
       }
     ],
     "doctor": [
-      {
-        "name": "update.bat",
-        "path": "H:/work/doctorvrclient2/update.bat"
-      },
       {
         "name": "update.bat",
         "path": "H:/work/doctor_ea/update.bat"
@@ -38,6 +38,28 @@
       {
         "name": "doctor_ea",
         "path": "H:/work/doctor_ea"
+      },
+      {
+        "name": "monkey",
+        "path": "H:/work/monkey"
+      },
+      {
+        "name": "m_update.bat",
+        "path": "H:/work/monkey/m_update.bat"
+      }
+    ],
+    "test_svr": [
+      {
+        "name": "winbuildall.bat",
+        "path": "H:/UnityForTest/vrbattlesvr/winbuildall.bat"
+      },
+      {
+        "name": "vrbattlesvr",
+        "path": "H:/UnityForTest/vrbattlesvr"
+      },
+      {
+        "name": "etcd.exe",
+        "path": "F:/download/etcd-v3.2.32-windows-amd64/etcd-v3.2.32-windows-amd64/etcd.exe"
       }
     ]
   }

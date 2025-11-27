@@ -77,7 +77,7 @@ class MiniQDesktop:
         self.screen_width = self.root.winfo_screenwidth()
         self.screen_height = self.root.winfo_screenheight()
         window_width = 1000
-        window_height = 400
+        window_height = 600
         #x = screen_width - window_width - 50  # 距离右边50像素
         x = 0
         y = self.screen_height - window_height - 60  # 距离底部50像素
