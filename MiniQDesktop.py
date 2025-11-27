@@ -196,12 +196,34 @@ class MiniQDesktop:
         if shortcuts is None:
             shortcuts = []
         
-        # 分组框架
-        group_frame = ttk.LabelFrame(self.group_container, text=group_name)
-        group_frame.pack(fill="x", pady=5, padx=5)
+        # 分组外层容器
+        group_container = ttk.Frame(self.group_container)
+        group_container.pack(fill="x", pady=5, padx=5)
+        
+        # 标题栏框架（可点击展开/折叠）
+        title_frame = ttk.Frame(group_container, relief="raised", borderwidth=1)
+        title_frame.pack(fill="x")
+        
+        # 折叠状态变量
+        is_collapsed = tk.BooleanVar(value=True)
+        
+        # 折叠/展开图标标签
+        collapse_icon = ttk.Label(title_frame, text="▶", width=2)
+        collapse_icon.pack(side="left", padx=(5, 0))
+        
+        # 分组名称标签
+        name_label = ttk.Label(title_frame, text=group_name, font=('Arial', 9, 'bold'))
+        name_label.pack(side="left", padx=5, pady=5)
+        
+        # 删除分组按钮
+        del_btn = ttk.Button(title_frame, text="X", width=3, command=lambda: self.delete_group(group_name))
+        del_btn.pack(side="right", padx=5)
+        
+        # 内容框架（快捷方式容器）
+        content_frame = ttk.Frame(group_container)
         
         # 快捷方式容器
-        shortcuts_frame = ttk.Frame(group_frame)
+        shortcuts_frame = ttk.Frame(content_frame)
         shortcuts_frame.pack(fill="x", padx=5, pady=5)
         
         # 添加已有快捷方式
@@ -209,14 +231,31 @@ class MiniQDesktop:
             self.create_shortcut_button(shortcuts_frame, shortcut["name"], shortcut["path"])
         
         # 添加"+"按钮
-        add_btn = ttk.Button(shortcuts_frame, text="+", width=3,command=lambda: self.add_shortcut_to_group(group_name))
+        add_btn = ttk.Button(shortcuts_frame, text="+", width=3, command=lambda: self.add_shortcut_to_group(group_name))
         add_btn.pack(side="left", padx=2)
-        add_btn2 = ttk.Button(shortcuts_frame, text="++", width=3,command=lambda: self.add_shortcut_to_group2(group_name))
+        add_btn2 = ttk.Button(shortcuts_frame, text="++", width=3, command=lambda: self.add_shortcut_to_group2(group_name))
         add_btn2.pack(side="left", padx=2)
         
-        # 删除分组按钮
-        del_btn = ttk.Button(group_frame, text="X", command=lambda: self.delete_group(group_name))
-        del_btn.pack(side="right", pady=(0, 5))
+        # 切换展开/折叠的函数
+        def toggle_collapse():
+            if is_collapsed.get():
+                # 展开
+                content_frame.pack(fill="x", padx=5)
+                collapse_icon.config(text="▼")
+                is_collapsed.set(False)
+            else:
+                # 折叠
+                content_frame.pack_forget()
+                collapse_icon.config(text="▶")
+                is_collapsed.set(True)
+        
+        # 绑定点击事件到标题栏的各个组件
+        title_frame.bind("<Button-1>", lambda e: toggle_collapse())
+        collapse_icon.bind("<Button-1>", lambda e: toggle_collapse())
+        name_label.bind("<Button-1>", lambda e: toggle_collapse())
+        
+        # 默认折叠状态（不显示内容）
+        # content_frame 不 pack，所以默认是隐藏的
         
         # 保存分组到数据
         if group_name not in self.shortcuts_data["groups"]:

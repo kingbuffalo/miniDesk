@@ -61,6 +61,20 @@
         "name": "etcd.exe",
         "path": "F:/download/etcd-v3.2.32-windows-amd64/etcd-v3.2.32-windows-amd64/etcd.exe"
       }
+    ],
+    "monkey_svr": [
+      {
+        "name": "winbuildall.bat",
+        "path": "F:/work/vrbattlesvr_trunk_Max/winbuildall.bat"
+      },
+      {
+        "name": "rmlog.bat",
+        "path": "F:/work/vrbattlesvr_trunk_Max/shell/win/rmlog.bat"
+      },
+      {
+        "name": "winrunall.bat",
+        "path": "F:/work/vrbattlesvr_trunk_Max/shell/win/winrunall.bat"
+      }
     ]
   }
 }
