@@ -60,6 +60,9 @@ class MiniQDesktop:
         self.shortcuts_file = "shortcuts.json"
         self.shortcuts_data = self.load_shortcuts()
         
+        # 存储所有分组的折叠控制器
+        self.group_controllers = {}
+        
         # 初始化UI
         self.setup_ui()
         
@@ -77,7 +80,7 @@ class MiniQDesktop:
         self.screen_width = self.root.winfo_screenwidth()
         self.screen_height = self.root.winfo_screenheight()
         window_width = 1000
-        window_height = 600
+        window_height = 400
         #x = screen_width - window_width - 50  # 距离右边50像素
         x = 0
         y = self.screen_height - window_height - 60  # 距离底部50像素
@@ -101,9 +104,30 @@ class MiniQDesktop:
         # self.drag_label.bind("<ButtonPress-1>", self.start_drag)
         # self.drag_label.bind("<B1-Motion>", self.on_drag)
         
-        # 分组容器
-        self.group_container = ttk.Frame(main_frame)
-        self.group_container.pack(expand=True, fill="both")
+        # 创建带滚动条的分组容器
+        canvas_frame = ttk.Frame(main_frame)
+        canvas_frame.pack(expand=True, fill="both")
+        
+        # 创建画布和滚动条
+        self.canvas = tk.Canvas(canvas_frame, highlightthickness=0)
+        scrollbar = ttk.Scrollbar(canvas_frame, orient="vertical", command=self.canvas.yview)
+        
+        # 分组容器（在画布内）
+        self.group_container = ttk.Frame(self.canvas)
+        
+        # 配置画布
+        self.canvas.configure(yscrollcommand=scrollbar.set)
+        scrollbar.pack(side="right", fill="y")
+        self.canvas.pack(side="left", fill="both", expand=True)
+        
+        # 在画布中创建窗口
+        self.canvas_window = self.canvas.create_window((0, 0), window=self.group_container, anchor="nw")
+        
+        # 绑定配置事件以更新滚动区域
+        self.group_container.bind("<Configure>", lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all")))
+        
+        # 绑定鼠标滚轮事件
+        self.canvas.bind_all("<MouseWheel>", lambda e: self.canvas.yview_scroll(int(-1*(e.delta/120)), "units"))
         
         # 控制按钮
         control_frame = ttk.Frame(main_frame)
@@ -187,6 +211,14 @@ class MiniQDesktop:
         for widget in self.group_container.winfo_children():
             widget.destroy()
         
+        # 清空分组控制器
+        self.group_controllers.clear()
+        
+        # 重置网格计数器
+        self.group_row = 0
+        self.group_col = 0
+        self.max_cols = 4  # 每行最多4个分组
+        
         # 加载保存的分组
         for group_name, shortcuts in self.shortcuts_data["groups"].items():
             self.create_group_frame(group_name, shortcuts)
@@ -198,33 +230,39 @@ class MiniQDesktop:
         
         # 分组外层容器
         group_container = ttk.Frame(self.group_container)
-        group_container.pack(fill="x", pady=5, padx=5)
+        group_container.grid(row=self.group_row, column=self.group_col, pady=5, padx=5, sticky="n")
+        
+        # 更新网格位置
+        self.group_col += 1
+        if self.group_col >= self.max_cols:
+            self.group_col = 0
+            self.group_row += 1
         
         # 标题栏框架（可点击展开/折叠）
         title_frame = ttk.Frame(group_container, relief="raised", borderwidth=1)
-        title_frame.pack(fill="x")
+        title_frame.pack()
         
         # 折叠状态变量
         is_collapsed = tk.BooleanVar(value=True)
         
         # 折叠/展开图标标签
         collapse_icon = ttk.Label(title_frame, text="▶", width=2)
-        collapse_icon.pack(side="left", padx=(5, 0))
+        collapse_icon.pack(side="left", padx=(3, 0))
         
         # 分组名称标签
         name_label = ttk.Label(title_frame, text=group_name, font=('Arial', 9, 'bold'))
-        name_label.pack(side="left", padx=5, pady=5)
+        name_label.pack(side="left", padx=3, pady=3)
         
         # 删除分组按钮
-        del_btn = ttk.Button(title_frame, text="X", width=3, command=lambda: self.delete_group(group_name))
-        del_btn.pack(side="right", padx=5)
+        del_btn = ttk.Button(title_frame, text="X", width=2, command=lambda: self.delete_group(group_name))
+        del_btn.pack(side="left", padx=3)
         
         # 内容框架（快捷方式容器）
         content_frame = ttk.Frame(group_container)
         
-        # 快捷方式容器
+        # 快捷方式容器（使用网格布局来控制宽度）
         shortcuts_frame = ttk.Frame(content_frame)
-        shortcuts_frame.pack(fill="x", padx=5, pady=5)
+        shortcuts_frame.pack(padx=5, pady=5)
         
         # 添加已有快捷方式
         for shortcut in shortcuts:
@@ -236,11 +274,23 @@ class MiniQDesktop:
         add_btn2 = ttk.Button(shortcuts_frame, text="++", width=3, command=lambda: self.add_shortcut_to_group2(group_name))
         add_btn2.pack(side="left", padx=2)
         
+        # 折叠函数（供外部调用）
+        def collapse():
+            if not is_collapsed.get():
+                content_frame.pack_forget()
+                collapse_icon.config(text="▶")
+                is_collapsed.set(True)
+        
         # 切换展开/折叠的函数
         def toggle_collapse():
             if is_collapsed.get():
-                # 展开
-                content_frame.pack(fill="x", padx=5)
+                # 展开前先折叠其他所有分组
+                for other_group_name, other_collapse_func in self.group_controllers.items():
+                    if other_group_name != group_name:
+                        other_collapse_func()
+                
+                # 展开当前分组
+                content_frame.pack(padx=5)
                 collapse_icon.config(text="▼")
                 is_collapsed.set(False)
             else:
@@ -248,6 +298,9 @@ class MiniQDesktop:
                 content_frame.pack_forget()
                 collapse_icon.config(text="▶")
                 is_collapsed.set(True)
+        
+        # 保存折叠函数到控制器字典
+        self.group_controllers[group_name] = collapse
         
         # 绑定点击事件到标题栏的各个组件
         title_frame.bind("<Button-1>", lambda e: toggle_collapse())
