@@ -1,79 +1,43 @@
 {
   "groups": {
-    "common": [
+    "smallworld": [
       {
-        "name": "Unity Hub.exe",
-        "path": "E:/Program Files/Unity Hub/Unity Hub.exe"
+        "name": "run_SmallVRDemo.bat",
+        "path": "C:/unityPro/BkProto/proto35/SmallVRDemo/run_SmallVRDemo.bat"
       },
-      {
-        "name": "gitcommit.bat",
-        "path": "H:/UnityForTest/gitcommit.bat"
-      },
-      {
-        "name": "gitupdate.bat",
-        "path": "H:/UnityForTest/gitupdate.bat"
-      },
-      {
-        "name": "ModiacFactory.exe",
-        "path": "G:/Program Files/WinAVI/Modiac Factory/ModiacFactory.exe"
-      },
-      {
-        "name": "ksolaunch.exe",
-        "path": "E:/Program Files/WPS Office/ksolaunch.exe"
-      },
-      {
-        "name": "XMind.exe",
-        "path": "E:/Program Files (x86)/XMind/XMind.exe"
-      },
-      {
-        "name": "PICO Connect.exe",
-        "path": "F:/Program Files/PICO Connect/PICO Connect.exe"
-      }
-    ],
-    "doctor": [
-      {
-        "name": "update.bat",
-        "path": "H:/work/doctor_ea/update.bat"
-      },
-      {
-        "name": "doctor_ea",
-        "path": "H:/work/doctor_ea"
-      },
-      {
-        "name": "monkey",
-        "path": "H:/work/monkey"
-      },
-      {
-        "name": "m_update.bat",
-        "path": "H:/work/monkey/m_update.bat"
-      }
-    ],
-    "test_svr": [
       {
         "name": "winbuildall.bat",
-        "path": "H:/UnityForTest/vrbattlesvr/winbuildall.bat"
-      },
-      {
-        "name": "vrbattlesvr",
-        "path": "H:/UnityForTest/vrbattlesvr"
-      },
-      {
-        "name": "etcd.exe",
-        "path": "F:/download/etcd-v3.2.32-windows-amd64/etcd-v3.2.32-windows-amd64/etcd.exe"
-      }
-    ],
-    "monkey_svr": [
-      {
-        "name": "winbuildall.bat",
-        "path": "F:/work/vrbattlesvr_trunk_Max/winbuildall.bat"
+        "path": "C:/unityPro/vrbattlesvr/winbuildall.bat"
       },
       {
         "name": "rmlog.bat",
-        "path": "F:/work/vrbattlesvr_trunk_Max/shell/win/rmlog.bat"
+        "path": "C:/unityPro/vrbattlesvr/shell/win/rmlog.bat"
       },
       {
         "name": "winrunall.bat",
-        "path": "F:/work/vrbattlesvr_trunk_Max/shell/win/winrunall.bat"
+        "path": "C:/unityPro/vrbattlesvr/shell/win/winrunall.bat"
+      }
+    ],
+    "start_svr_base": [
+      {
+        "name": "start.bat",
+        "path": "D:/work/Redis-8.4.0-Windows-x64-msys2/start.bat"
+      },
+      {
+        "name": "etcd.exe",
+        "path": "D:/work/etcd-v3.6.7-windows-amd64/etcd.exe"
+      },
+      {
+        "name": "gitcommit.bat",
+        "path": "C:/unityPro/gitcommit.bat"
+      },
+      {
+        "name": "gitupdate.bat",
+        "path": "C:/unityPro/gitupdate.bat"
+      },
+      {
+        "name": "v2rayN.exe",
+        "path": "C:/Program Files/v2rayn/v2rayN.exe"
       }
     ]
   }
