@@ -16,6 +16,10 @@
       {
         "name": "winrunall.bat",
         "path": "C:/unityPro/vrbattlesvr/shell/win/winrunall.bat"
+      },
+      {
+        "name": "run_small.bat",
+        "path": "C:/unityPro/xls2json/run_small.bat"
       }
     ],
     "start_svr_base": [
@@ -38,6 +42,30 @@
       {
         "name": "v2rayN.exe",
         "path": "C:/Program Files/v2rayn/v2rayN.exe"
+      },
+      {
+        "name": "XMind.exe",
+        "path": "C:/Program Files (x86)/XMind/XMind.exe"
+      },
+      {
+        "name": "frpc.bat",
+        "path": "C:/Users/cds/Downloads/frp_0.65.0_windows_amd64/frp_0.65.0_windows_amd64/frpc.bat"
+      },
+      {
+        "name": "Xshell.exe",
+        "path": "C:/Program Files (x86)/NetSarang/Xshell 8/Xshell.exe"
+      },
+      {
+        "name": "redis-server.exe",
+        "path": "D:/work/Redis-8.4.0-Windows-x64-msys2/redis-server.exe"
+      },
+      {
+        "name": "livekit.bat",
+        "path": "D:/work/livekit/livekit.bat"
+      },
+      {
+        "name": "Godot_v4.6.2-stable_win64.exe",
+        "path": "D:/Program Files (x86)/Godot_v4.6.2/Godot_v4.6.2-stable_win64.exe"
       }
     ]
   }
